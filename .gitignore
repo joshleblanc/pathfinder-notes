@@ -1,0 +1,13 @@
+# Local config — never commit credentials
+.env
+
+# Audio + session output (regenerated each run)
+chunks/
+transcripts/
+sessions/*.wav
+sessions/*.raw
+
+canned-pf2e-transcript.txt
+sample-*
+bin/
+obj/
