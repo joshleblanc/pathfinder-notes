@@ -90,6 +90,31 @@ Out-of-character moments: ruling debates, player table talk, restroom breaks, an
 
 Player absences, schedule changes, life updates, or "No real-life updates." if the transcript doesn't contain any.
 
+## Highlight Reel Video Prompt (MiniMax H3)
+
+Below is a ready-to-paste prompt for **MiniMax-H3** in text-to-video mode. The summarizer distills the recap above into a single 15-second cinematic highlight using H3's three required fields. After the recap is generated, copy the filled block, paste it into H3 (model `MiniMax-H3`, T2VA, no reference media, 5–15s, 16:9, 1080P), and a video comes back. For a longer reel, repeat with the next-best moment and stitch the clips — each invocation is one continuous 15-second video.
+
+Hard rules for the summarizer when filling this section:
+
+- Begin `integrated_multimodal_description:` exactly with the token `[Shot 1]` — no preamble, no lead-in sentence, no quotes. Every later shot starts with `[Shot N] At MM:SS.sss, the camera cuts to ...` and timestamps must be strictly increasing inside the 15-second window.
+- The whole prompt must stay under 7,000 Unicode code points. If it would exceed that, drop shots from the end; do not abbreviate shots already written.
+- Do NOT mention H3, MiniMax, the model name, the duration, the aspect ratio, or "this video" inside the prompt body — those are configured outside the prompt.
+- Pull concrete visual details only from the recap above (locations, NPCs, creatures, weather, lighting, props). Do not invent costumes, items, or effects the recap doesn't support.
+- Default visual style for this template: cinematic fantasy, painterly, dramatic rim lighting, shallow depth of field. Replace the style clause in `[Shot 1]` if the GM prefers a different look (noir, anime, storybook, woodcut, etc.).
+- Pick 3–5 of the most visually striking moments from Story Beats and Encounters. Each shot covers roughly 3–4 seconds. Each shot must include: composition/scale, camera movement (use the H3 vocabulary: Push In/Pull Out, Pan, Truck, Tilt, Arc Shot, Tracking Shot, Static Shot, etc.), subject identity, setting, and the action or state change on screen.
+- Speakers in the video use `(S1)`, `(S2)`, … IDs in vocal order. In-fiction dialogue (rare in a highlight reel — usually none) goes inside `<d>[English] ...</d>` tags and only there.
+- `overall_soundscape` is 1–4 sentences of diegetic ambience and physical SFX. No dialogue, no music.
+- `non_diegetic_music` is 1–3 sentences of audience-only score. Use `N/A` if the GM wants no score.
+- The wrapped code block is part of the recap output — the summarizer fills in the three fields inside it and keeps the surrounding ``` fences intact.
+
+```
+integrated_multimodal_description: [Shot 1] ...
+
+overall_soundscape: ...
+
+non_diegetic_music: ...
+```
+
 ---
 
 End of session.
