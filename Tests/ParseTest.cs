@@ -1,15 +1,15 @@
 using System;
 using System.IO;
-using Pathfinder.Notes;
+using Pathfinder.Notes.Transcription;
 
-namespace Pathfinder.Notes;
+namespace Pathfinder.Notes.Tests;
 
 /// <summary>
-/// `--parse &lt;file&gt;` mode: read a JSON file (in the API's verbose_json shape),
-/// parse it via TranscriptionClient.ParseSample, write a sample transcript chunk
-/// to ./transcripts/_parse_test/, then print what would have appeared on stdout.
-/// Used to confirm the parser + transcript writer behave correctly without
-/// spending API credits on a real call.
+/// <c>--parse &lt;file&gt;</c> — read a JSON file (in the API's <c>verbose_json</c>
+/// shape), parse it via <see cref="TranscriptionClient.ParseSample"/>, write a
+/// sample transcript chunk to <c>./transcripts/_parse_test/</c>, then print
+/// what would have appeared on stdout. Confirms the parser + transcript writer
+/// without spending API credits.
 /// </summary>
 public static class ParseTest
 {

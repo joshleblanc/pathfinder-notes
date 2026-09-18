@@ -1,18 +1,18 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Pathfinder.Notes;
+using Pathfinder.Notes.Summary;
 
-namespace Pathfinder.Notes;
+namespace Pathfinder.Notes.Tests;
 
 /// <summary>
-/// `--summarize-test &lt;transcript.txt&gt;` — builds the prompt that would be
-/// sent to the LLM and writes it to disk so a human (or a non-network code
-/// reviewer) can verify the prompt shape. Does NOT call the LLM, so no API
-/// key is required.
+/// <c>--summarize-test &lt;transcript.txt&gt;</c> — builds the prompt that
+/// would be sent to the LLM and writes it to disk so a human (or a
+/// non-network code reviewer) can verify the prompt shape. Does NOT call the
+/// LLM, so no API key is required.
 ///
 /// Also locates the template, reports which file it picked, and prints the
-/// first 200 chars of the rendered prompt for sanity.
+/// first 600 chars of the rendered prompt for sanity.
 /// </summary>
 public static class SummaryTest
 {

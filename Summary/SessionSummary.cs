@@ -7,19 +7,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Pathfinder.Notes;
+namespace Pathfinder.Notes.Summary;
 
-// ────────────────────────────────────────────────────────────────────────────
-// SessionSummary — reads the rolling transcript + a user-editable PF2e template,
-// then asks MiniMax's chat-completions endpoint to fill in the template.
-//
-// Output:  transcripts/summary_<session-id>.md
-//
-// Default API URL matches the Anthropic-Messages endpoint the user already
-// has configured for Claude Code:
-//     https://api.minimax.io/anthropic/v1/messages
-// Override via env SUMMARY_API_URL or the --summary-api-url flag.
-// ────────────────────────────────────────────────────────────────────────────
+/// <summary>
+/// Reads the rolling transcript + a user-editable PF2e template, then asks the
+/// MiniMax chat-completions endpoint (Anthropic-Messages API by default) to
+/// fill in the template. Output goes to
+/// <c>transcripts/summary_&lt;session-id&gt;.md</c>.
+/// </summary>
 public sealed class SessionSummary : IDisposable
 {
     private readonly HttpClient _http;

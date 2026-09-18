@@ -3,8 +3,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NAudio.CoreAudioApi;
 using Pathfinder.Notes;
+using Pathfinder.Notes.Audio;
+using Pathfinder.Notes.Recording;
+using Pathfinder.Notes.Summary;
+using Pathfinder.Notes.Tests;
+using Pathfinder.Notes.Transcription;
 
 internal static class Program
 {
@@ -76,16 +80,24 @@ internal static class Program
 
     private static int ListDevices()
     {
-        using var en = new MMDeviceEnumerator();
-        var defMic = en.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
-        var defSpk = en.GetDefaultAudioEndpoint(DataFlow.Render,  Role.Multimedia);
+        var inputs = Devices.ListInputs();
+        var loops  = Devices.ListLoopbackSources();
+        var defInput = inputs.Count > 0 ? inputs[0].Name : null;
+        var defLoop  = loops.Count  > 0 ? loops[0].Name  : null;
 
-        Console.WriteLine("input  (microphones, capture flow):");
-        foreach (var d in en.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active))
-            Console.WriteLine($"  {d.FriendlyName}{(d.FriendlyName == defMic.FriendlyName ? "  (default)" : "")}");
-        Console.WriteLine("output (speakers, render flow — usable for WASAPI loopback capture):");
-        foreach (var d in en.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active))
-            Console.WriteLine($"  {d.FriendlyName}{(d.FriendlyName == defSpk.FriendlyName ? "  (default)" : "")}");
+        Console.WriteLine("input  (microphones):");
+        foreach (var d in inputs)
+            Console.WriteLine($"  {d.Name}{(d.Name == defInput ? "  (default)" : "")}");
+        if (loops.Count > 0)
+        {
+            Console.WriteLine("loopback (system audio sources — usable for capture):");
+            foreach (var d in loops)
+                Console.WriteLine($"  {d.Name}{(d.Name == defLoop ? "  (default)" : "")}");
+        }
+        else
+        {
+            Console.WriteLine("loopback (system audio sources — none detected on this system).");
+        }
         return 0;
     }
 
@@ -93,17 +105,13 @@ internal static class Program
     {
         var cfg = LoadConfig(opts);
 
-        using var micEn = new MMDeviceEnumerator();
-
-        var micDevice = Devices.FindByName(micEn, DataFlow.Capture, cfg.MicDeviceName);
-        MMDevice? loopDevice = null;
+        var micDevice = Devices.ResolveInput(cfg.MicDeviceName);
+        AudioDevice? loopDevice = null;
         if (!opts.NoLoopback)
         {
             try
             {
-                loopDevice = cfg.LoopbackDeviceName is null
-                    ? micEn.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia)
-                    : Devices.FindByName(micEn, DataFlow.Render, cfg.LoopbackDeviceName);
+                loopDevice = Devices.ResolveLoopbackSource(cfg.LoopbackDeviceName);
             }
             catch (Exception ex)
             {

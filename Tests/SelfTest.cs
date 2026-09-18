@@ -1,15 +1,14 @@
 using System;
 using System.IO;
 using System.Threading;
-using NAudio.CoreAudioApi;
-using Pathfinder.Notes;
+using Pathfinder.Notes.Audio;
 
-namespace Pathfinder.Notes;
+namespace Pathfinder.Notes.Tests;
 
 /// <summary>
-/// End-to-end audio-path smoke test: open both NAudio captures, let them stream
-/// for a few seconds, then mix + encode the most-recent window to a WAV file on
-/// disk. Lets us validate the WASAPI capture loop without needing an API key.
+/// <c>--self-test</c> — open mic + loopback for 5 seconds, mix + encode the
+/// most-recent window to <c>self-test.wav</c>. Validates the capture pipeline
+/// without spending API credits.
 /// </summary>
 public static class SelfTest
 {
@@ -18,19 +17,23 @@ public static class SelfTest
         Console.WriteLine("self-test: opening mic + loopback for 5s, writing self-test.wav");
         int seconds = 5;
 
-        using var en = new MMDeviceEnumerator();
-        var mic = en.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
-        var spk = en.GetDefaultAudioEndpoint(DataFlow.Render,  Role.Multimedia);
+        var mic = Devices.ResolveInput(null);
+        var spk = Devices.ResolveLoopbackSource(null);
+        if (spk is null)
+        {
+            Console.Error.WriteLine("no loopback source detected on this system — run with --no-loopback or fix audio routing.");
+            return 1;
+        }
 
-        Console.WriteLine($"  mic     {mic.FriendlyName}");
-        Console.WriteLine($"  loop    {spk.FriendlyName}");
+        Console.WriteLine($"  mic     {mic.Name}");
+        Console.WriteLine($"  loop    {spk.Name}");
 
         const int sr = Config.AsrSampleRate;
         var micBuf  = new RingBuffer(seconds * sr);
         var loopBuf = new RingBuffer(seconds * sr);
 
-        using var micCap = new AudioCapture(mic, micBuf, loopback: false);
-        using var spkCap = new AudioCapture(spk, loopBuf, loopback: true);
+        using var micCap = AudioCapture.Open(mic, micBuf);
+        using var spkCap = AudioCapture.Open(spk, loopBuf);
 
         try
         {

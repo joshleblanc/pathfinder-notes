@@ -1,18 +1,19 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using NAudio.CoreAudioApi;
+using Pathfinder.Notes.Audio;
+using Pathfinder.Notes.Transcription;
 
-namespace Pathfinder.Notes;
+namespace Pathfinder.Notes.Recording;
 
-// ────────────────────────────────────────────────────────────────────────────
-// RecordingService — owns the mic + (optional) loopback AudioCapture objects,
-// their ring buffers, and the wall-clock tick loop. Every `chunk_seconds` it
-// mixes the captured audio, encodes WAV, uploads to ASR, and appends to the
-// rolling transcript. On cancellation, FinalFlushAsync stops the captures
-// and uploads whatever new audio has accumulated since the last tick — so
-// the user's last partial chunk isn't lost when they hit Ctrl-C.
-// ────────────────────────────────────────────────────────────────────────────
+/// <summary>
+/// Owns the mic + (optional) loopback <see cref="AudioCapture"/> objects, their
+/// ring buffers, and the wall-clock tick loop. Every <c>chunk_seconds</c> the
+/// service mixes the captured audio, encodes WAV, uploads to ASR, and appends
+/// to the rolling transcript. On cancellation, <c>FinalFlushAsync</c> stops the
+/// captures and uploads whatever new audio has accumulated since the last tick
+/// — so the user's last partial chunk isn't lost when they hit Ctrl-C.
+/// </summary>
 public sealed class RecordingService : IDisposable
 {
     private readonly Config _config;
@@ -39,8 +40,8 @@ public sealed class RecordingService : IDisposable
         Config config,
         TranscriptionClient client,
         Transcripts transcripts,
-        MMDevice micDevice,
-        MMDevice? loopDevice)
+        AudioDevice micDevice,
+        AudioDevice? loopDevice)
         : this(config, transcripts, micDevice, loopDevice,
               (wav, dur, ct) => client.TranscribeAsync(wav, dur, ct))
     { }
@@ -49,8 +50,8 @@ public sealed class RecordingService : IDisposable
     public RecordingService(
         Config config,
         Transcripts transcripts,
-        MMDevice micDevice,
-        MMDevice? loopDevice,
+        AudioDevice micDevice,
+        AudioDevice? loopDevice,
         Func<byte[], TimeSpan, CancellationToken, Task<TranscriptionResult>> transcribe)
     {
         _config      = config;
@@ -61,10 +62,10 @@ public sealed class RecordingService : IDisposable
         _micBuf  = new RingBuffer(bufferSamples);
         _loopBuf = new RingBuffer(bufferSamples);
 
-        _micCapture  = new AudioCapture(micDevice, _micBuf,  loopback: false);
+        _micCapture  = AudioCapture.Open(micDevice, _micBuf);
         _loopCapture = loopDevice is null
             ? null
-            : new AudioCapture(loopDevice, _loopBuf, loopback: true);
+            : AudioCapture.Open(loopDevice, _loopBuf);
     }
 
     public string MicDeviceName   => _micCapture?.DeviceName ?? "(none)";
@@ -166,8 +167,8 @@ public sealed class RecordingService : IDisposable
 
     /// <summary>
     /// Called from RunAsync once the main loop has been cancelled. Stops both
-    /// WASAPI captures, drains any in-flight NAudio callbacks, and uploads the
-    /// audio that arrived since the last regular tick as one final chunk.
+    /// captures, drains any in-flight callbacks, and uploads the audio that
+    /// arrived since the last regular tick as one final chunk.
     ///
     /// Final flush always uses CancellationToken.None for the upload (so even
     /// if the user cancels the loop, the in-progress upload completes).

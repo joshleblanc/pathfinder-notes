@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using NAudio.CoreAudioApi;
-using Pathfinder.Notes;
+using Pathfinder.Notes.Audio;
+using Pathfinder.Notes.Recording;
+using Pathfinder.Notes.Transcription;
 
-namespace Pathfinder.Notes;
+namespace Pathfinder.Notes.Tests;
 
 /// <summary>
-/// `--final-flush-test [&lt;seconds&gt;]` — runs the recording service for N
-/// seconds with a stub transcribe delegate, then triggers cancellation and
-/// verifies FinalFlushAsync invokes the delegate exactly once with audio that
-/// arrived after the most recent tick. No API key required.
+/// <c>--final-flush-test [&lt;seconds&gt;]</c> — run the recording service for N
+/// seconds with a stub transcribe delegate, then trigger cancellation and
+/// verify that <c>FinalFlushAsync</c> invokes the delegate exactly once with
+/// audio that arrived after the most recent tick. No API key required.
 /// </summary>
 public static class FinalFlushTest
 {
@@ -21,11 +22,15 @@ public static class FinalFlushTest
         int seconds = args.Length > 0 && int.TryParse(args[0], out var s) ? s : 6;
         Console.WriteLine($"final-flush-test: {seconds}s of capture, then cancel + flush");
 
-        using var en = new MMDeviceEnumerator();
-        var mic = en.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
-        var spk = en.GetDefaultAudioEndpoint(DataFlow.Render,  Role.Multimedia);
-        Console.WriteLine($"  mic  {mic.FriendlyName}");
-        Console.WriteLine($"  loop {spk.FriendlyName}");
+        var mic = Devices.ResolveInput(null);
+        var spk = Devices.ResolveLoopbackSource(null);
+        if (spk is null)
+        {
+            Console.Error.WriteLine("no loopback source detected on this system — final-flush-test needs mic + loopback.");
+            return 1;
+        }
+        Console.WriteLine($"  mic  {mic.Name}");
+        Console.WriteLine($"  loop {spk.Name}");
 
         var transcripts = new Transcripts("transcripts", "asr-1.0", "verbose_json");
 

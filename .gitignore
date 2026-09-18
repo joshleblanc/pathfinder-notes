@@ -11,3 +11,5 @@ canned-pf2e-transcript.txt
 sample-*
 bin/
 obj/
+
+*.wav

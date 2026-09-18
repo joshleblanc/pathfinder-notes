@@ -2,22 +2,19 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Pathfinder.Notes;
 
-namespace Pathfinder.Notes;
+namespace Pathfinder.Notes.Summary;
 
 /// <summary>
-/// `--summarize-from &lt;transcript.txt&gt;` — read an existing transcript file,
-/// call MiniMax's chat endpoint, and write the recap to
-///   &lt;dir&gt;/summary_&lt;session-id&gt;.md
+/// <c>--summarize-from &lt;transcript.txt&gt;</c> — read an existing transcript
+/// file, call the MiniMax chat endpoint, and write the recap next to it as
+/// <c>summary_&lt;session-id&gt;.md</c>. The session id is derived from the
+/// transcript filename (<c>transcript_2026-09-16_11-50-04.txt</c> →
+/// <c>summary_2026-09-16_11-50-04.md</c>).
 ///
-/// Session ID is derived from the transcript filename
-/// (transcript_2026-09-16_11-50-04.txt → summary_2026-09-16_11-50-04.md).
-///
-/// Useful for:
-///   • retro-summarizing sessions recorded without --summarize,
-///   • re-running with a different model / template without re-recording,
-///   • running offline on a transcript you got from somewhere else.
+/// Useful for retro-summarizing sessions recorded without
+/// <c>--summarize</c>, re-running with a different model/template, or running
+/// offline on a transcript obtained elsewhere.
 /// </summary>
 public static class ManualSummary
 {
@@ -118,8 +115,8 @@ public static class ManualSummary
         return null;
     }
 
-    private static string Require(string[] args, int i, string flag)
-        => (i < args.Length) ? args[i] : throw new ArgumentException($"missing value after {flag}");
+    private static string Require(string[] args, int i, string flag) =>
+        (i < args.Length) ? args[i] : throw new ArgumentException($"missing value after {flag}");
 
     /// <summary>
     /// Build a Config focused on the summary call. Loads .env from the binary

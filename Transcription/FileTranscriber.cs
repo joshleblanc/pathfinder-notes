@@ -5,20 +5,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using Pathfinder.Notes;
+using Pathfinder.Notes.Audio;
 
-namespace Pathfinder.Notes;
+namespace Pathfinder.Notes.Transcription;
 
 /// <summary>
-/// `--transcribe-file &lt;path&gt;` mode: decode an existing audio file (anything
-/// Windows Media Foundation can read — WAV, MP3, M4A, AAC, OGG, FLAC, …),
-/// resample to 16 kHz mono, slice into `chunk_seconds` windows, and upload each
-/// to the ASR endpoint the same way the live recorder does. Once exhausted,
-/// drain the tail. Optionally generates the PF2e summary afterwards.
-///
-/// Supported formats are whatever NAudio's `MediaFoundationReader` accepts
-/// (preferred; full Windows coverage) with `WaveFileReader` as a fallback for
-/// plain WAV.
+/// <c>--transcribe-file &lt;path&gt;</c> mode: decode an existing audio file
+/// (WAV/MP3/M4A/AAC/OGG/FLAC), downmix + resample to 16 kHz mono, slice into
+/// <c>chunk_seconds</c> windows, and upload each to the ASR endpoint. Once the
+/// file is exhausted, drain the tail. Optionally generates the PF2e summary
+/// afterwards. Supported decoders: Media Foundation (Windows; broad format
+/// coverage) with plain <see cref="WaveFileReader"/> as the WAV fallback.
 /// </summary>
 public sealed class FileTranscriber : IDisposable
 {

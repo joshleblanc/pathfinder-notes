@@ -15,6 +15,7 @@
   <ItemGroup>
     <!-- WASAPI mic + output-loopback capture -->
     <PackageReference Include="NAudio" Version="2.2.0" />
+    <PackageReference Include="PortAudioSharp2" Version="1.0.6" />
   </ItemGroup>
 
   <ItemGroup>
